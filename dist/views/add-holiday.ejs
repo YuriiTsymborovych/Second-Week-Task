@@ -26,7 +26,7 @@
 
       <br />
 
-      <button type="submit" onclick="showAlternativeDates()">Submit</button>
+      <button type="submit">Submit</button>
     </form>
     <h2>Holidays List</h2>
     <ul>
@@ -48,38 +48,6 @@
                 });
             }
         };
-      
-        const showAlternative = '<%= showAlternative %>';
-        if(showAlternative){
-            function showAlternativeDates() {
-            Swal.fire({
-                title: 'Public holidays in your period',
-                text: "There are public holidays in your scheduled period:",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Continue with this dates',
-                cancelButtonText: 'Cancel and change dates',
-            }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        axios.post(`/add-holiday?result=true`)
-                            .then(response => { console.log("result on client", result);
-                                console.log('Request added successfully', response);
-                            })
-                            .catch(error => {
-                                console.error('An error occurred while deleting', error);
-                            });
-
-                    } else if (result.isDenied) {
-                        Swal.fire(
-                            'Cancelled',
-                            'Please change your holiday period',
-                            'error'
-                        );
-                    }
-                });
-            }
-        }
     </script>
   </body>
 </html>

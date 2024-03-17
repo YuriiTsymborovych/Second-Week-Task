@@ -59,16 +59,9 @@ rules.push(rule);
 
 let successMessage:string;
 let failMessage:string;
-let showAlternative: boolean = false;
-// function arrayToObject(arr:[]) {
-//     return arr.reduce((acc, currentValue, index) => {
-//         acc[index] = currentValue;
-//         return acc;
-//     }, {});
-// }
+
 function main(){
 
-// Оголошення типу даних для відповіді сервера
     interface Holiday {
         date: string;
         localName: string;
@@ -76,38 +69,25 @@ function main(){
         countryCode: string;
     }
 
-// Функція для виконання GET-запиту та повернення результату
     async function fetchHolidays(year: number, countryCode: string): Promise<Holiday[]> {
         try {
-            // Виконання GET-запиту за допомогою Axios
             const response: AxiosResponse<Holiday[]> = await axios.get<Holiday[]>(`https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`);
-
-            // Повернення списку свят
             return response.data;
         } catch (error) {
-            // Обробка помилок та повернення порожнього масиву у випадку помилки
             console.error('Виникла помилка при виконанні запиту:', error);
             return [];
         }
     }
-    //const holidaysPromise: Promise<Holiday[]> = fetchHolidays(2024, 'UA');
 
     const holidays: Holiday[] = [];
     let relevantHolidays: Holiday[] = [];
     fetchHolidays(2024, 'UA')
     .then((holidaysData: Holiday[]) => {
         holidays.push(...holidaysData);
-        console.log('Public Holidays List:', holidays);
     })
     .catch((error) => {
         console.error('An error occurred while receiving holidays:', error);
     });
-    
-    /*holidaysPromise.then((holidays: Holiday[]) => {
-        console.log('Holidays List:', holidays);
-    }).catch((error) => {
-        console.error('An error occurred while receiving holidays:', error);
-    });*/
 
 
     function checkDates(employeeId:number,startDate:string,endDate:string,){
@@ -156,16 +136,8 @@ function main(){
     }
 
     function updateRequest(id:number,startDate:string,endDate:string){
-        console.log(startDate + " " + endDate);
-        console.log(id)
-        console.log(typeof id)
-        console.log(requests[id]);
-
         const startDateObj = new Date(startDate);
         const endDateObj = new Date(endDate);
-
-        console.log(startDateObj);
-        console.log(endDateObj);
 
         if (isValid(startDateObj) && isValid(endDateObj) && requests[id] !== undefined) {
             const formattedsStartDate = format(startDateObj, 'yyyy-MM-dd');
@@ -174,9 +146,8 @@ function main(){
                 requests[id].startDate = formattedsStartDate;
                 requests[id].endDate = formattedsEndDate;
                 requests[id].status = statusPending;
-                console.log(startDateObj + " " + endDateObj);
+                successMessage = "Holiday request updated successfully!";
                 console.log("Перемога");
-                console.log(requests[id]);
                 return requests[id];
             }
         }
@@ -254,7 +225,6 @@ function main(){
                     }
                 });
             });
-            console.log("Relevant Holidays:", relevantHolidays);
             res.render('holidays',  {requests, approvedOrRejectedRequests, successMessage, relevantHolidays});
         } catch (e) {
             res.status(500).send('Internal Server Error');
@@ -298,22 +268,11 @@ function main(){
         const employeeId = parseInt(req.body.employeeId as string);
         const startDate = req.body.startDate as string;
         const endDate = req.body.endDate as string;
-        const result = req.query.result;
 
         if(checkDates(employeeId,startDate,endDate)==true){
-            holidays.forEach(holiday => {
-                if (areIntervalsOverlapping(
-                        {start: new Date(holiday.date), end: new Date(holiday.date)},
-                        {start: new Date(startDate), end: new Date(endDate)}
-                    )) {
-                    showAlternative = true;
-                    if(result){console.log("Result on server" + result);
-                        requests.push(new HolidayRequests(employeeId, startDate, endDate));
-                        successMessage = "Holiday request created successfully!";
-                        res.redirect('/holidays');
-                    }
-                }
-            });
+            requests.push(new HolidayRequests(employeeId, startDate, endDate));
+            successMessage = "Holiday request created successfully!";
+            res.redirect('/holidays');
         }else {
             res.redirect('/add-holiday');
         }
@@ -321,7 +280,7 @@ function main(){
 
     app.get('/add-holiday', (req, res) => {
         try {
-            res.render('add-holiday', {failMessage, holidays, showAlternative});
+            res.render('add-holiday', {failMessage, holidays});
         } catch (error) {
             res.status(500).send(error);
         }

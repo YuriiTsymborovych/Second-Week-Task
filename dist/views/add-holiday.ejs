@@ -1,33 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10" />
     <title>Add Holiday Form</title>
-</head>
+  </head>
 
-<body>
+  <body>
+    <h1>Add Holiday Form</h1>
+    <form action="/add-holiday" method="POST">
+      <label for="employeeId">Employee ID:</label>
+      <input type="number" id="employeeId" name="employeeId" required />
 
-<h1>Add Holiday Form</h1>
-<form action="/add-holiday" method="POST">
-    <label for="employeeId">Employee ID:</label>
-    <input type="number" id="employeeId" name="employeeId" required>
+      <br />
 
-    <br>
+      <label for="startDate">Start Date:</label>
+      <input type="date" id="startDate" name="startDate" placeholder="2024-04-01" required />
 
-    <label for="startDate">Start Date:</label>
-    <input type="date" id="startDate" name="startDate" placeholder="2024-04-01" required>
+      <br />
 
-    <br>
+      <label for="endDate">End Date:</label>
+      <input type="date" id="endDate" name="endDate" placeholder="2024-04-15" required />
 
-    <label for="endDate">End Date:</label>
-    <input type="date" id="endDate" name="endDate" placeholder="2024-04-15" required>
+      <br />
 
-    <br>
+      <button type="submit" onclick="showAlternativeDates()">Submit</button>
+    </form>
+    <h2>Holidays List</h2>
+    <ul>
+      <% holidays.forEach(holiday => { %>
+      <li><%= holiday.localName %> - <%= holiday.date %></li>
+      <% }); %>
+    </ul>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        window.onload = function() {
+            const failMessage = '<%= failMessage %>';
+            if (failMessage) {
+                Swal.fire({
+                    icon: 'error',
+                    title: failMessage,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        };
+      
+        const showAlternative = '<%= showAlternative %>';
+        if(showAlternative){
+            function showAlternativeDates() {
+            Swal.fire({
+                title: 'Public holidays in your period',
+                text: "There are public holidays in your scheduled period:",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Continue with this dates',
+                cancelButtonText: 'Cancel and change dates',
+            }).then((result) => {
+                    if (result.isConfirmed) {
 
-    <button type="submit">Submit</button>
-</form>
+                        axios.post(`/add-holiday?result=true`)
+                            .then(response => { console.log("result on client", result);
+                                console.log('Request added successfully', response);
+                            })
+                            .catch(error => {
+                                console.error('An error occurred while deleting', error);
+                            });
 
-</body>
+                    } else if (result.isDenied) {
+                        Swal.fire(
+                            'Cancelled',
+                            'Please change your holiday period',
+                            'error'
+                        );
+                    }
+                });
+            }
+        }
+    </script>
+  </body>
 </html>
